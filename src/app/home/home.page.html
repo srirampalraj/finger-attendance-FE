@@ -1,20 +1,120 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>
-      Blank
-    </ion-title>
+    <ion-title> Fingerprint Attendance </ion-title>
+    @if (isLoggedIn|async) {
+    <ion-button (click)="logoff()" slot="end"> Logout </ion-button>
+    }
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">Blank</ion-title>
+      @if (isLoggedIn|async) {
+      <ion-button (click)="logoff()" slot="end"> Logout </ion-button>
+      }
+      <ion-title size="large">Fingerprint Attendance</ion-title>
     </ion-toolbar>
   </ion-header>
 
   <div id="container">
-    <strong>Ready to create an app?</strong>
-    <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
+    @if (isLoggedIn|async) {
+    <table
+      mat-table
+      [dataSource]="(studentData | async) ?? []"
+      class="mat-elevation-z8"
+    >
+      <!--- Note that these columns can be defined in any order.
+              The actual rendered columns are set as a property on the row definition" -->
+
+      <!-- Position Column -->
+      <ng-container matColumnDef="reg">
+        <th mat-header-cell *matHeaderCellDef>Reg.</th>
+        <td mat-cell *matCellDef="let element">{{element.reg}}</td>
+      </ng-container>
+
+      <!-- Name Column -->
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>Name</th>
+        <td mat-cell *matCellDef="let element">{{element.name}}</td>
+      </ng-container>
+
+      <!-- Weight Column -->
+      <ng-container matColumnDef="isPresent">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td
+          mat-cell
+          *matCellDef="let element"
+          [ngStyle]="{backgroundColor: element.isPresent ? 'green':'red'}"
+        >
+          <b
+            ><ion-icon
+              slot="primary"
+              [name]="element.isPresent ? 'checkmark-outline': 'close-outline'"
+            ></ion-icon
+          ></b>
+        </td>
+      </ng-container>
+
+      <!-- Symbol Column -->
+      <ng-container matColumnDef="time">
+        <th mat-header-cell *matHeaderCellDef>Time</th>
+        <td mat-cell *matCellDef="let element">
+          {{element.time | date:'dd MMM yyyy - hh:mm a'}}
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+    } @else {
+    <div>Please refresh to login to continue using this app</div>
+    }
   </div>
 </ion-content>
+
+<ion-modal trigger="open-modal" (willDismiss)="onWillDismiss($event)">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="end">
+          <ion-button (click)="cancel()">Cancel</ion-button>
+        </ion-buttons>
+        <ion-title>Welcome</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      <form (ngSubmit)="submit()" [formGroup]="loginFormGroup">
+        <ion-item>
+          <ion-input
+            label="Enter your email"
+            labelPlacement="stacked"
+            type="email"
+            formControlName="email"
+            placeholder="Your email"
+          ></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-input
+            label="Enter your password"
+            labelPlacement="stacked"
+            type="password"
+            formControlName="password"
+            placeholder="Your password"
+          ></ion-input> </ion-item
+        ><ion-item>
+          <ion-button
+            [disabled]="!loginFormGroup.valid"
+            type="submit"
+            expand="block"
+            fill="clear"
+            shape="round"
+          >
+            Login
+          </ion-button>
+        </ion-item>
+      </form>
+    </ion-content>
+  </ng-template>
+</ion-modal>
